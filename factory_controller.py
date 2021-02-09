@@ -78,28 +78,16 @@ def spawn_item(part, base, address):
     global in_query
     in_query.add(address)
     base = [
-        {
-            'name': 'Emitter 1 (Part)',
-            'value': part
-        },
-        {
-            'name': 'Emitter 1 (Base)',
-            'value': base
-        },
-        {
-            'name': 'Emitter 1 (Emit)',
-            'value': True
-        }
+        ('Emitter 1 (Part)', part),
+        ('Emitter 1 (Base)', base),
+        ('Emitter 1 (Emit)', True),
     ]
-    requests.put(PUT_ADDR, json=base)
+    put(base)
     sleep(0.1)
     stop = [
-        {
-            'name': 'Emitter 1 (Emit)',
-            'value': False
-        }
+        ('Emitter 1 (Emit)', False),
     ]
-    requests.put(PUT_ADDR, json=stop)
+    put(stop)
 
 
 def tuple_to_gavno(tuple_list):
