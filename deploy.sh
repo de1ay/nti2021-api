@@ -6,4 +6,5 @@ pip3 install -r requirements.txt
 systemctl stop daphne
 systemctl daemon-reload
 python3 manage.py migrate
+python3 manage.py collectstatic
 systemctl start daphne
