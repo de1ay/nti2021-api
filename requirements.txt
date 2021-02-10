@@ -1,1 +1,4 @@
+django
 requests
+djangorestframework
+dj-rest-auth[with_social]
