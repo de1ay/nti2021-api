@@ -1,0 +1,11 @@
+[Unit]
+Description=Daphne server script for project
+After=network.target
+
+[Service]
+WorkingDirectory=/root/nti2021-api
+ExecStart=daphne -b 0.0.0.0 -p 80 nti2021-api.asgi:application
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

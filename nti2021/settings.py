@@ -28,7 +28,7 @@ EMAIL_HOST_PASSWORD
 '''
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ''
+SECRET_KEY = 'ChangeMe'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -168,3 +168,9 @@ EMAIL_USE_SSL=True
 # TODO
 LOGIN_REDIRECT_URL='https://nti.offsound.ru'
 LOGIN_URL='https://nti.offsound.ru'
+
+
+try:
+    from local_settings import *
+except ImportError:
+    pass
