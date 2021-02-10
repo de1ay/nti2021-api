@@ -1,13 +1,26 @@
+import math
+import random
+
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, get_user_model
+from django.core.mail import send_mail
+from rest_framework.exceptions import APIException
+
 try:
     from django.utils.translation import gettext_lazy as _
 except ImportError:
     from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions, serializers
+from .models import UserInfo, UserOtp
 
 UserModel = get_user_model()
+
+
+class UserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserInfo
+        fields = '__all__'
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -22,9 +35,17 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['url', 'name']
 
 
+class OtpSend(APIException):
+    status_code = 200
+    default_detail = 'Enter otp code from email'
+    default_code = 'otp'
+
+
+
 class CustomLoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=False, allow_blank=True)
     email = serializers.EmailField(required=False, allow_blank=True)
+    token = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(style={'input_type': 'password'})
 
     def authenticate(self, **kwargs):
@@ -130,6 +151,31 @@ class CustomLoginSerializer(serializers.Serializer):
         # If required, is the email verified?
         if 'dj_rest_auth.registration' in settings.INSTALLED_APPS:
             self.validate_email_verification_status(user)
+
+        token = attrs.get('token')
+        if not token:
+            try:
+                UserOtp.objects.get(user=user).delete()
+            except Exception:
+                pass
+            random_value = math.floor(random.random()*10000000000)
+            UserOtp.objects.create(user=user, otp=str(random_value))
+            send_mail(
+                'Код для доступа - Antares',
+                f'Код для доступа: {random_value}',
+                None,
+                [user.email],
+                fail_silently=False,
+            )
+            raise OtpSend()
+        else:
+            try:
+                value = UserOtp.objects.get(user=user).otp
+            except Exception:
+                raise exceptions.ValidationError('No OTP in database found')
+            if value != token:
+                raise exceptions.ValidationError('Неправильный код')
+            UserOtp.objects.get(user=user).delete()
 
         attrs['user'] = user
         return attrs
