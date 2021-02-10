@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/root/nti2021-api
-ExecStart=daphne -b 0.0.0.0 -p 80 nti2021.asgi:application
+ExecStart=gunicorn -k uvicorn.workers.UvicornWorker nti2021.asgi:application --workers 24 -b 0.0.0.0:80
 Restart=always
 
 [Install]
