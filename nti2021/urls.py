@@ -18,12 +18,14 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 from api import views
-from allauth.account.views import confirm_email
+from warehouse import views as warehouse
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
 router.register(r'users-info', views.UserInfoViewSet)
+router.register(r'item', warehouse.ItemViewSet)
+router.register(r'log', warehouse.LogViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
