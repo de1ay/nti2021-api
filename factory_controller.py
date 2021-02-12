@@ -1,6 +1,8 @@
 import asyncio
 import math
 from time import sleep
+
+import aiohttp
 import requests
 
 # Storage specs 6x9=54 x2=108 x2=216
@@ -27,14 +29,15 @@ async def create_new_tag(new_value):
         ('RFID Reader 11 Command', 1),
         ('RFID Reader 11 Execute Command', True)
     ]
-    put(base)
+    await put(base)
     await asyncio.sleep(TICK_DELAY)
     base = [
         ('RFID Reader 11 Execute Command', False)
     ]
-    put(base)
+    await put(base)
     await asyncio.sleep(TICK_DELAY)
-    ans = get(['RFID Reader 11 Read Data'])[0]['value']
+    ans = await get(['RFID Reader 11 Read Data'])
+    ans = ans[0]['value']
     print(f'Tag Serial: {ans}')
     print(f'Create new tag {in_query}')
     base = [
@@ -55,27 +58,27 @@ async def sklad1(new_value):
     global sklad1_move
     if not new_value or sklad1_move:
         return
-    put([('StopR 1 Out', True)])
+    await put([('StopR 1 Out', True)])
     base = [
         ('RFID In Command', 2),
         ('RFID In Memory Index', 1),
         ('RFID In Execute Command', True)
     ]
-    put(base)
+    await put(base)
     await asyncio.sleep(TICK_DELAY)
     base = [
         ('RFID In Execute Command', False)
     ]
-    put(base)
+    await put(base)
     await asyncio.sleep(TICK_DELAY)
-    ans = get(['RFID In Read Data'])
+    ans = await get(['RFID In Read Data'])
     if ans[0]['value'] <= 108:
-        put([('CT 1 (+)', False),('CT 1 Left', True),('CT 1A Right', True)])
+        await put([('CT 1 (+)', False),('CT 1 Left', True),('CT 1A Right', True)])
         sklad1_move = True
         if len(PLAN):
             asyncio.create_task(spawn_item(2, 2, PLAN.pop(0)))
     else:
-        put([('StopR 1 Out', False)])
+        await put([('StopR 1 Out', False)])
         if len(PLAN):
             asyncio.create_task(spawn_item(3, 2, PLAN.pop(0)))
 
@@ -84,42 +87,44 @@ async def sklad1_leave(new_value):
     global sklad1_move
     if not new_value or not sklad1_move:
         return
-    put([('CT 1 (+)', True), ('CT 1 Left', False), ('CT 1A Right', False), ('StopR 1 Out', False)])
+    await put([('CT 1 (+)', True), ('CT 1 Left', False), ('CT 1A Right', False), ('StopR 1 Out', False)])
     sklad1_move = False
 
 
 async def lock_input_a(new_value):
     global a_query, a_lock
     if not new_value:
-        put([('Roller Stop Load A', True), ('Load RC A4', False), ('RC A3', False), ('Curved RC A2', False), ('RC A1', False)])
+        await put([('Roller Stop Load A', True), ('Load RC A4', False), ('RC A3', False), ('Curved RC A2', False), ('RC A1', False)])
         base = [
             ('RFID A1 Command', 2),
             ('RFID A1 Memory Index', 1),
             ('RFID A1 Execute Command', True)
         ]
-        put(base)
+        await put(base)
         await asyncio.sleep(TICK_DELAY)
         base = [
             ('RFID A1 Execute Command', False)
         ]
-        put(base)
+        await put(base)
         await asyncio.sleep(TICK_DELAY)
-        ans = get(['RFID A1 Read Data'])[0]['value']
+        ans = await get(['RFID A1 Read Data'])
+        ans = ans[0]['value']
         if ans == 0:
-            put([('Roller Stop Load A', False), ('Load RC A4', True), ('RC A3', True), ('Curved RC A2', True), ('RC A1', True)])
+            await put([('Roller Stop Load A', False), ('Load RC A4', True), ('RC A3', True), ('Curved RC A2', True), ('RC A1', True)])
             return
         base = [
             ('RFID A1 Command', 1),
             ('RFID A1 Execute Command', True)
         ]
-        put(base)
+        await put(base)
         await asyncio.sleep(TICK_DELAY)
         base = [
             ('RFID A1 Execute Command', False)
         ]
-        put(base)
+        await put(base)
         await asyncio.sleep(TICK_DELAY)
-        id = get(['RFID A1 Read Data'])[0]['value']
+        id = await get(['RFID A1 Read Data'])
+        id = id[0]['value']
         a_query.append({'type': 'input', 'address': ans, 'id': id})
 
 
@@ -134,18 +139,18 @@ CALLBACKS = {
 
 async def elevator_input(task, elevator):
     # Pick up
-    put([(f'Forks Left {elevator}', True)])
+    await put([(f'Forks Left {elevator}', True)])
     while not ans[f'At Left {elevator}']:
         await asyncio.sleep(TICK_DELAY)
-    put([(f'Lift {elevator}', True)])
+    await put([(f'Lift {elevator}', True)])
     await asyncio.sleep(0.3)
     while ans[f'Moving Z {elevator}']:
         await asyncio.sleep(TICK_DELAY)
-    put([(f'Forks Left {elevator}', False)])
+    await put([(f'Forks Left {elevator}', False)])
     while not ans[f'At Middle {elevator}']:
         await asyncio.sleep(TICK_DELAY)
     # Move
-    put([(f'Target Position {elevator}', math.ceil(task[f'address'] / 2))])
+    await put([(f'Target Position {elevator}', math.ceil(task[f'address'] / 2))])
     await asyncio.sleep(0.6)
     while ans[f'Moving Z A'] or ans[f'Moving X A']:
         await asyncio.sleep(TICK_DELAY)
@@ -154,18 +159,18 @@ async def elevator_input(task, elevator):
         direction = f'Forks Left {elevator}'
     else:
         direction = f'Forks Right {elevator}'
-    put([(direction, True)])
+    await put([(direction, True)])
     while not ans[f'At Left {elevator}'] and not ans[f'At Right {elevator}']:
         await asyncio.sleep(TICK_DELAY)
-    put([(f'Lift {elevator}', False)])
+    await put([(f'Lift {elevator}', False)])
     await asyncio.sleep(0.3)
     while ans[f'Moving Z {elevator}']:
         await asyncio.sleep(TICK_DELAY)
-    put([(direction, False)])
+    await put([(direction, False)])
     while not ans[f'At Middle {elevator}']:
         await asyncio.sleep(TICK_DELAY)
     # Move Back
-    put([(f'Target Position {elevator}', 55)])
+    await put([(f'Target Position {elevator}', 55)])
     await asyncio.sleep(0.6)
     while ans[f'Moving Z {elevator}'] or ans[f'Moving X {elevator}']:
         await asyncio.sleep(TICK_DELAY)
@@ -173,7 +178,7 @@ async def elevator_input(task, elevator):
 
 async def elevator_output(task, elevator):
     # Move to pick
-    put([('Target Position A', task['address'] % 54)])
+    await put([('Target Position A', task['address'] % 54)])
     await asyncio.sleep(0.6)
     while ans['Moving Z A'] or ans['Moving X A']:
         await asyncio.sleep(TICK_DELAY)
@@ -182,29 +187,29 @@ async def elevator_output(task, elevator):
         direction = 'Forks Left A'
     else:
         direction = 'Forks Right A'
-    put([(direction, True)])
+    await put([(direction, True)])
     while not ans['At Left A'] and not ans['At Right A']:
         await asyncio.sleep(TICK_DELAY)
-    put([('Lift A', True)])
+    await put([('Lift A', True)])
     await asyncio.sleep(0.3)
     while ans['Moving Z A']:
         await asyncio.sleep(TICK_DELAY)
-    put([(direction, False)])
+    await put([(direction, False)])
     while not ans['At Middle A']:
         await asyncio.sleep(TICK_DELAY)
     # Move Back
-    put([('Target Position A', 55)])
+    await put([('Target Position A', 55)])
     await asyncio.sleep(0.6)
     while ans['Moving Z A'] or ans['Moving X A']:
         await asyncio.sleep(TICK_DELAY)
-    put([('Forks Right A', True)])
+    await put([('Forks Right A', True)])
     while not ans['At Right A']:
         await asyncio.sleep(TICK_DELAY)
-    put([('Lift A', False)])
+    await put([('Lift A', False)])
     await asyncio.sleep(0.3)
     while ans['Moving Z A']:
         await asyncio.sleep(TICK_DELAY)
-    put([('Forks Right A', False)])
+    await put([('Forks Right A', False)])
     while not ans['At Middle A']:
         await asyncio.sleep(TICK_DELAY)
 
@@ -219,7 +224,7 @@ async def a_routine():
     print(f'Starting task {task}')
     if task['type'] == 'input':
         await elevator_input(task, 'A')
-        put([('Roller Stop Load A', False), ('Load RC A4', True), ('RC A3', True), ('Curved RC A2', True), ('RC A1', True)])
+        await put([('Roller Stop Load A', False), ('Load RC A4', True), ('RC A3', True), ('Curved RC A2', True), ('RC A1', True)])
     elif task['type'] == 'output':
         await elevator_output(task, 'A')
     a_lock = False
@@ -234,7 +239,7 @@ async def b_routine():
     print(f'Starting task {task}')
     if task['type'] == 'input':
         await elevator_input(task, 'B')
-        put([('Roller Stop Load B', False), ('Load RC B3', True)])
+        await put([('Roller Stop Load B', False), ('Load RC B3', True)])
     elif task['type'] == 'output':
         await elevator_output(task, 'B')
     b_lock = False
@@ -249,12 +254,12 @@ async def spawn_item(part, base, address):
         ('Emitter 1 (Base)', base),
         ('Emitter 1 (Emit)', True),
     ]
-    put(base)
+    await put(base)
     await asyncio.sleep(0.1)
     stop = [
         ('Emitter 1 (Emit)', False),
     ]
-    put(stop)
+    await put(stop)
 
 
 def tuple_to_gavno(tuple_list):
@@ -320,8 +325,7 @@ async def main_cycle():
         "Moving Z B",
         "Moving X B",
     ]
-    ans = requests.get(GET_ADDR, json=base)
-    ans = ans.json()
+    ans = await get(base)
     ans = {i['name']:i['value'] for i in ans}
     callbacks = []
     if ans_old:
@@ -334,12 +338,16 @@ async def main_cycle():
     asyncio.create_task(a_routine())
 
 
-def put(base):
-    return requests.put(PUT_ADDR, json=tuple_to_gavno(base)).json()
+async def put(base):
+    async with aiohttp.ClientSession() as session:
+        async with session.put(PUT_ADDR, json=tuple_to_gavno(base)) as response:
+            return await response.json()
 
 
-def get(base):
-    return requests.get(GET_ADDR, json=base).json()
+async def get(base):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(GET_ADDR, json=base) as response:
+            return await response.json()
 
 
 async def main_loop():

@@ -4,3 +4,4 @@ djangorestframework
 dj-rest-auth[with_social]
 whitenoise
 Pillow
+aiohttp
