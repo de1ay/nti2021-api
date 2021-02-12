@@ -23,6 +23,7 @@ from allauth.account.views import confirm_email
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
+router.register(r'users-info', views.UserInfoViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
