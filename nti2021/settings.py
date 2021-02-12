@@ -179,7 +179,7 @@ LOGIN_URL='https://nti.offsound.ru'
 CORS_ORIGIN_WHITELIST = [
     "https://nti.offsound.ru",
     "https://api.offsound.ru",
-    "http://127.0.0.1:8081",
+    "http://127.0.0.1:8080",
 ]
 
 
