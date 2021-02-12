@@ -28,6 +28,7 @@ router.register(r'users-info', views.UserInfoViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('leave_comment', views.comment),
+    path('ip', views.get_client_ip),
     path('admin/', admin.site.urls),
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),

@@ -2,3 +2,6 @@ venv/
 .idea/
 db.sqlite3
 /local_settings.py
+media/
+tmp/
+static/

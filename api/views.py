@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework import permissions
 from rest_framework.decorators import api_view, action
 from rest_framework.generics import get_object_or_404
@@ -30,6 +30,8 @@ class GroupViewSet(viewsets.ModelViewSet):
 class UserInfoViewSet(viewsets.ModelViewSet):
     queryset = UserInfo.objects.all()
     serializer_class = UserInfoSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['fio']
 
     @action(detail=False)
     def user(self, request, *args, **kwargs):
@@ -51,3 +53,13 @@ def comment(request):
         fail_silently=False,
     )
     return Response({"success": True})
+
+
+@api_view(['GET'])
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
