@@ -205,7 +205,7 @@ EMAIL_HOST_PASSWORD='Change me pls'
 EMAIL_USE_SSL=True
 
 LOGIN_REDIRECT_URL='https://nti.offsound.ru/profile'
-LOGIN_URL='https://nti.offsound.ru/registration'
+LOGIN_URL='https://nti.offsound.ru/login'
 
 
 CORS_ORIGIN_WHITELIST = [
