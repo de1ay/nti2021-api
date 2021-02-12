@@ -41,7 +41,6 @@ class OtpSend(APIException):
     default_code = 'otp'
 
 
-
 class CustomLoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=False, allow_blank=True)
     email = serializers.EmailField(required=False, allow_blank=True)

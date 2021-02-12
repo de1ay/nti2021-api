@@ -1,8 +1,11 @@
 from django.contrib.auth.models import User, Group
+from django.core.mail import send_mail
 from rest_framework import viewsets
 from rest_framework import permissions
-from rest_framework.decorators import permission_classes
+from rest_framework.decorators import permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializers import UserSerializer, GroupSerializer
 
@@ -24,3 +27,15 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+
+
+@api_view(['POST'])
+def comment(request):
+    send_mail(
+        f'Отзыв о сотруднике {request.data["employer"]} - Antares',
+        f'{request.data["text"]}',
+        None,
+        [u.email for u in User.objects.filter(is_staff=True)],
+        fail_silently=False,
+    )
+    return Response({"success": True})
