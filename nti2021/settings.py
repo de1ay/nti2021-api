@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'django_filters',
     'rest_framework.authtoken',
     'dj_rest_auth',
     'django.contrib.sites',
@@ -110,6 +111,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -117,6 +121,18 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    {
+        'NAME': 'nti2021.validators.MaximumLengthValidator',
+    },
+    {
+        'NAME': 'nti2021.validators.OneHighCaseValidator',
+    },
+    {
+        'NAME': 'nti2021.validators.OneZnakValidator',
+    },
+    {
+        'NAME': 'nti2021.validators.OneNumberValidator',
+    }
 ]
 
 
@@ -144,12 +160,17 @@ MEDIA_ROOT = 'media'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissions'
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'nti2021.pagination.OurPagination',
+    'PAGE_SIZE': 50,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
 SITE_ID = 1
@@ -173,9 +194,8 @@ EMAIL_HOST_USER='no-reply@nullteam.info'
 EMAIL_HOST_PASSWORD='Change me pls'
 EMAIL_USE_SSL=True
 
-# TODO
-LOGIN_REDIRECT_URL='https://nti.offsound.ru'
-LOGIN_URL='https://nti.offsound.ru'
+LOGIN_REDIRECT_URL='https://nti.offsound.ru/profile'
+LOGIN_URL='https://nti.offsound.ru/registration'
 
 
 CORS_ORIGIN_WHITELIST = [

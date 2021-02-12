@@ -6,3 +6,4 @@ whitenoise
 Pillow
 aiohttp
 django-cors-headers
+django-filter

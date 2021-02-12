@@ -17,22 +17,6 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['put'], permission_classes=(permissions.IsAdminUser,), serializer_class=PasswordSerializer)
-    def change_password(self, request, pk=None):
-        serializer = PasswordSerializer(data=request.data)
-        user = get_object_or_404(User.objects.all(), id=pk)
-        if serializer.is_valid():
-            #if not request.user.check_password(serializer.data.get('old_password')):
-            #    return Response({'old_password': ['Wrong password.']},
-            #                    status=400)
-            # set_password also hashes the password that the user will get
-            user.set_password(serializer.data.get('new_password'))
-            user.save()
-            return Response({'status': 'password set'}, status=200)
-
-        return Response(serializer.errors,
-                        status=400)
-
 
 class GroupViewSet(viewsets.ModelViewSet):
     """
