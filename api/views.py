@@ -1,7 +1,7 @@
 from rest_framework import viewsets, filters
-from rest_framework import permissions
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .serializers import *
@@ -44,6 +44,7 @@ class UserInfoViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def comment(request):
     send_mail(
         f'Отзыв о сотруднике {request.data["employer"]} - Antares',
@@ -56,10 +57,11 @@ def comment(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]
     else:
         ip = request.META.get('REMOTE_ADDR')
-    return ip
+    return Response(ip)
