@@ -10,8 +10,8 @@ import requests
 
 PUT_ADDR = 'http://localhost:7410/api/tag/values/by-name'
 GET_ADDR = 'http://localhost:7410/api/tag/values/by-name'
-TICK_DELAY = 0.02
-PLAN = [2,3,4,5,109,110,111]
+TICK_DELAY = 0.06
+PLAN = [1,2,3,0,109,110,111]
 # Query
 in_query = set()
 a_query = list()
@@ -74,7 +74,7 @@ async def sklad1(new_value):
     await put(base)
     await asyncio.sleep(TICK_DELAY)
     ans = await get(['RFID In Read Data'])
-    if ans[0]['value'] <= 108:
+    if 0 < ans[0]['value'] <= 108:
         await put([('CT 1 (+)', False),('CT 1 Left', True),('CT 1A Right', True)])
         sklad1_move = True
         if len(PLAN):
@@ -103,13 +103,14 @@ async def lock_input_a(new_value):
             ('RFID A1 Execute Command', True)
         ]
         await put(base)
-        await asyncio.sleep(TICK_DELAY)
+        await asyncio.sleep(0.6)
         base = [
             ('RFID A1 Execute Command', False)
         ]
         await put(base)
         await asyncio.sleep(TICK_DELAY)
         ans = await get(['RFID A1 Read Data'])
+        print(ans)
         ans = ans[0]['value']
         if ans == 0:
             await put([('Roller Stop Load A', False), ('Load RC A4', True), ('RC A3', True), ('Curved RC A2', True), ('RC A1', True)])
@@ -140,7 +141,7 @@ async def lock_input_b(new_value):
             ('RFID B1 Execute Command', True)
         ]
         await put(base)
-        await asyncio.sleep(TICK_DELAY)
+        await asyncio.sleep(0.6)
         base = [
             ('RFID B1 Execute Command', False)
         ]
@@ -231,13 +232,12 @@ async def central2_split(new_value):
     await put(base)
     await asyncio.sleep(TICK_DELAY)
     adr = await get(['RFID B3 Read Data'])
-    print(adr)
     if adr[0]['value'] != 0:
         await put([('CT 3B Right', True)])
         await asyncio.sleep(2)
         while not ans['RS 3B Out to B']:
             await asyncio.sleep(TICK_DELAY)
-    elif adr[0]['value'] == 0:
+    else:
         await put([('CT 3B Left', True),
                    ('CT 3 Right', True)])
         while not ans['CS 3']:
@@ -301,7 +301,7 @@ async def elevator_input(task, elevator):
     else:
         correction = 0
     await put([(f'Target Position {elevator}', math.ceil((task['address']-correction) / 2))])
-    print(f'placing {math.ceil((task["address"]-correction) / 2)}')
+    print(f'Placing {elevator}{math.ceil((task["address"]-correction) / 2)}')
     await asyncio.sleep(0.6)
     while ans[f'Moving Z {elevator}'] or ans[f'Moving X {elevator}']:
         await asyncio.sleep(TICK_DELAY)

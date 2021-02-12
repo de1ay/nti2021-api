@@ -5,3 +5,4 @@ dj-rest-auth[with_social]
 whitenoise
 Pillow
 aiohttp
+django-cors-headers
