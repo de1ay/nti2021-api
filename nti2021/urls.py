@@ -32,6 +32,7 @@ router.register(r'log', warehouse.LogViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('leave_comment', views.comment),
+    path('leave_calling', views.back),
     path('ip', views.get_client_ip),
     path('admin/', admin.site.urls),
     path('dj-rest-auth/', include('dj_rest_auth.urls')),

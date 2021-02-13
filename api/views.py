@@ -67,6 +67,19 @@ def comment(request):
     return Response({"success": True})
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def back(request):
+    send_mail(
+        f'Форма обратной связи - Antares',
+        f'{request.data["text"]}',
+        None,
+        [u.email for u in User.objects.filter(is_staff=True)],
+        fail_silently=False,
+    )
+    return Response({"success": True})
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_client_ip(request):
