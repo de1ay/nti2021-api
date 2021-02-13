@@ -7,3 +7,5 @@ Pillow
 aiohttp
 django-cors-headers
 django-filter
+openpyxl
+django-extensions

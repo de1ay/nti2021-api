@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     'api',
     'warehouse',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [

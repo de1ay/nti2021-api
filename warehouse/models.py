@@ -4,13 +4,13 @@ from django.db import models
 
 class Item(models.Model):
     # Metadata
-    name = models.CharField(max_length=200, name='Название')
-    model = models.CharField(max_length=200, name='Модель')
-    system_id = models.IntegerField(name='ID Груза')
-    date = models.DateField(name='Дата')
-    time_in = models.TimeField(name='Время погрузки')
-    time_out = models.TimeField(name='Время отгрузки')
-    vendor = models.CharField(max_length=200, name='Изготовитель')
+    name = models.CharField(max_length=200, help_text='Название')
+    model = models.CharField(max_length=200, help_text='Модель')
+    system_id = models.IntegerField(help_text='ID Груза')
+    date = models.DateField(help_text='Дата')
+    time_in = models.TimeField(help_text='Время погрузки')
+    time_out = models.TimeField(help_text='Время отгрузки')
+    vendor = models.CharField(max_length=200, help_text='Изготовитель')
     # Storage
     STATES = [
         ('created', 'Задача поставленна'),
@@ -21,12 +21,12 @@ class Item(models.Model):
         ('moving_out', 'На конвеере: Едет на отгрузку'),
         ('destroyed', 'Отгружено'),
     ]
-    rfid = models.IntegerField(name='ID RFID метки', default=0, unique=True)
-    address = models.IntegerField(name='Назначенная ячейка', unique=True)
-    state = models.CharField(max_length=10, choices=STATES, default='created', name='Состояние')
+    rfid = models.IntegerField(help_text='ID RFID метки', default=0)
+    address = models.IntegerField(help_text='Назначенная ячейка', unique=True)
+    state = models.CharField(max_length=10, choices=STATES, default='created', help_text='Состояние')
 
     def __str__(self):
-        return self.name
+        return self.name + ' |Инв№ ' + str(self.system_id)
 
 
 class Log(models.Model):
