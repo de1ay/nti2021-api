@@ -1,7 +1,7 @@
 from rest_framework import viewsets, filters
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .serializers import *
@@ -41,6 +41,17 @@ class UserInfoViewSet(viewsets.ModelViewSet):
         queryset = get_object_or_404(self.queryset, user=target_user)
         serializer = UserInfoSerializer(queryset)
         return Response(serializer.data)
+    @action(detail=False, permission_classes=[IsAuthenticated], methods=['POST'])
+    def update_info(self, request, *args, **kwargs):
+        user = request.user
+        queryset = self.queryset.filter(user=user)
+        for i in queryset:
+            queryset.delete()
+        serializer = UserInfoSerializer(data=request.data)
+        if serializer.is_valid():
+            UserInfo.objects.create(user=user,fio=serializer.data['fio'],about=serializer.data['about'],number=serializer.data['number'],avatar=request.FILES['avatar'])
+            return Response({'success':True})
+        return Response(serializer.errors, status=400)
 
 
 @api_view(['POST'])

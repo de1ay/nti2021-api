@@ -17,6 +17,6 @@
 
 После регистрации пользователь может только просматривать данные
 
-Файл [./factory_controller.py]() отвечает за управление конвеером в FactoryIO
+Файл [factory_controller.py](https://github.com/de1ay/nti2021-api/blob/master/factory_controller.py) отвечает за управление конвеером в FactoryIO
 
 Стриминг через OBS на nginx-rtmp который преобразует в HLS для хостинга
