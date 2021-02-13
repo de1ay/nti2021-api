@@ -181,7 +181,7 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/day',
         'user': '1000/day',
-        'dj_rest_auth': '30/min', # TODO
+        'dj_rest_auth': '3/min',
     },
 }
 
